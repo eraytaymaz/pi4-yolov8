@@ -23,12 +23,15 @@
 #include <stdio.h>
 #include <vector>
 
+#include <filesystem>
+#include <string>
+
 YoloV8 yolov8;
 int target_size = 640; //416; //320;  must be divisible by 32.
 
 int main(int argc, char** argv)
 {
-    const char* imagepath = argv[1];
+    /*const char* imagepath = argv[1];
 
     if (argc != 2)
     {
@@ -41,17 +44,26 @@ int main(int argc, char** argv)
     {
         fprintf(stderr, "cv::imread %s failed\n", imagepath);
         return -1;
-    }
+    }*/
 
     yolov8.load(target_size);       //load model (once) see yoloyV8.cpp line 246
 
-    std::vector<Object> objects;
-    yolov8.detect(m, objects);      //recognize the objects
-    yolov8.draw(m, objects);        //show the outcome
+    std::string directory_path = "data"; // Replace with your directory path
 
-    cv::imshow("RPi4 - 1.95 GHz - 2 GB ram",m);
-//    cv::imwrite("out.jpg",m);
-    cv::waitKey(0);
 
+    for (const auto& entry : std::filesystem::directory_iterator(directory_path)) {
+        if (entry.is_regular_file()) {
+            std::cout << entry.path() << std::endl;
+        }
+        cv::Mat m = cv::imread(entry.path(), 1);
+
+        std::vector<Object> objects;
+        yolov8.detect(m, objects);      //recognize the objects
+        yolov8.draw(m, objects);        //show the outcome
+
+        cv::imshow("RPi4 - 1.95 GHz - 2 GB ram",m);
+    //    cv::imwrite("out.jpg",m);
+        cv::waitKey(0);
+    }
     return 0;
 }
